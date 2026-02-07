@@ -2,7 +2,7 @@ name: Build and Push Docker Image
 
 on:
   push:
-    branches: [ "main", "develop" ] # 當 main 或 develop 分支有更新時觸發
+    branches: [ "main", "develop" ]
 
 jobs:
   build:
@@ -15,14 +15,12 @@ jobs:
     - name: Login to Docker Hub
       uses: docker/login-action@v2
       with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+        username: joliej  # <--- 這裡直接寫你的 ID
+        password: ${{ secrets.DOCKER_PASSWORD }} # 密碼還是要讀 Secrets
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v4
       with:
         context: .
         push: true
-        # 注意：這裡會自動將 Image 推送到你的 Docker Hub
-        # 請確保下面的 your-dockerhub-user 改成你自己的帳號
-        tags: ${{ secrets.joliej }}/weather-app:latest
+        tags: joliej/weather-app:latest
