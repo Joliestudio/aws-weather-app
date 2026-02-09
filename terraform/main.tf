@@ -54,7 +54,7 @@ data "aws_ami" "amazon_linux" {
 # 3. 建立 EC2 實體
 resource "aws_instance" "app_server" {
   ami           = data.aws_ami.amazon_linux.id
-  instance_type = "t2.micro" # 免費方案 Free Tier
+  instance_type = "t3.micro" # 免費方案 Free Tier
 
   vpc_security_group_ids = [aws_security_group.weather_sg.id]
 
