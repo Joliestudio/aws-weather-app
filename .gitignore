@@ -1,4 +1,18 @@
 venv/
 __pycache__/
-.env
 .DS_Store
+
+# 忽略 Terraform 暫存資料夾
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+terraform.tfvars
+
+# 忽略 Python 虛擬環境與快取
+.venv/
+__pycache__/
+*.pyc
+
+# 忽略環境變數檔
+.env

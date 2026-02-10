@@ -1,74 +1,129 @@
 import streamlit as st
 import requests
 import os
-import pandas as pd  # <---【新增 1】記得引入 pandas
+import pandas as pd
+import logging
+import google.generativeai as genai
 from dotenv import load_dotenv
 
-# 載入 .env 檔案中的環境變數
+# --- 1. 系統設定 ---
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 load_dotenv()
 
-# 頁面設定
-st.set_page_config(page_title="雲端氣象儀表板", page_icon="🌤️")
+st.set_page_config(page_title="AI 氣象旅遊嚮導", page_icon="🤖", layout="wide")
 
-# 取得 API Key
-API_KEY = os.getenv("OPENWEATHER_API_KEY")
-BASE_URL = "http://api.openweathermap.org/data/2.5/weather"
+# --- 2. 核心功能函式 ---
+@st.cache_data(ttl=600)
+def get_weather_data(city_name, api_key):
+    """取得 OpenWeatherMap 資料"""
+    base_url = "http://api.openweathermap.org/data/2.5/weather"
+    params = {"q": city_name, "appid": api_key, "units": "metric", "lang": "zh_tw"}
+    try:
+        response = requests.get(base_url, params=params)
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        logger.error(f"Weather API Error: {e}")
+        return None
 
-# --- 介面設計 ---
-st.title("🌤️ 雲端架構師氣象站")
-st.markdown("### Python Streamlit + AWS ECS Demo")
+def get_ai_travel_advice(api_key, city, weather_desc, temp, humidity):
+    """呼叫 Google Gemini 生成旅遊建議"""
+    if not api_key:
+        return "⚠️ 請設定 Google Gemini API Key 以啟用 AI 功能"
+    
+    try:
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-pro')
+        
+        prompt = f"""
+        你是一位專業的旅遊嚮導。請根據以下即時天氣資訊，為旅客規劃一個簡單的半日遊行程。
+        
+        地點：{city}
+        天氣狀況：{weather_desc}
+        氣溫：{temp}°C
+        濕度：{humidity}%
+        
+        請用繁體中文回答，包含以下內容：
+        1. 一句幽默的開場白（關於天氣）。
+        2. 穿搭建議。
+        3. 推薦的 3 個景點或活動（如果下雨請推薦室內，晴天推薦戶外）。
+        4. 當地特色美食推薦。
+        """
+        
+        with st.spinner('🤖 嚮導 正在絞盡腦汁為您規劃行程...'):
+            response = model.generate_content(prompt)
+            return response.text
+    except Exception as e:
+        return f"嚮導 暫時無法連線: {str(e)}"
+
+# --- 3. UI 介面設計 ---
+st.title("🤖 AI 氣象旅遊嚮導")
+st.markdown("### 結合 OpenWeatherMap 與 Google Gemini 的智慧決策系統")
+st.markdown("---")
 
 # 側邊欄
 with st.sidebar:
-    st.header("查詢設定")
-    city = st.text_input("請輸入城市 (英文)", "Taipei")
-    st.caption("例如: Tokyo, New York, London")
+    st.header("⚙️ 設定")
+    
+    # 氣象 API Key
+    weather_api_key = os.getenv("OPENWEATHER_API_KEY")
+    if not weather_api_key:
+        weather_api_key = st.text_input("OpenWeather API Key", type="password")
 
-# --- 邏輯處理 ---
-if st.button("查詢天氣", type="primary"):
-    if not API_KEY:
-        st.error("⚠️ 錯誤：找不到 API Key。請確認 .env 檔案或雲端環境變數已設定。")
+    # Gemini API Key (新增)
+    gemini_api_key = os.getenv("GOOGLE_API_KEY")
+    if not gemini_api_key:
+        gemini_api_key = st.text_input("Google Gemini API Key", type="password")
+        
+    city = st.text_input("輸入城市 (英文)", "Kyoto")
+    st.info("💡 提示：AI 會根據天氣好壞自動調整行程建議")
+
+# --- 4. 主邏輯 ---
+if st.button("🚀 啟動 AI 規劃", type="primary") or city:
+    if not weather_api_key:
+        st.error("❌ 缺少 Weather API Key")
     else:
-        try:
-            # 發送 API 請求
-            params = {
-                "q": city,
-                "appid": API_KEY,
-                "units": "metric",
-                "lang": "zh_tw"
-            }
-            response = requests.get(BASE_URL, params=params)
+        # 1. 取得天氣
+        weather_data = get_weather_data(city, weather_api_key)
+        
+        if weather_data:
+            # 版面配置：左氣象，右 AI
+            col1, col2 = st.columns([1, 1.5])
             
-            if response.status_code == 200:
-                data = response.json()
+            with col1:
+                st.subheader(f"📍 {weather_data['name']} 即時氣象")
                 
-                # 1. 顯示主要數據 
-                col1, col2, col3 = st.columns(3)
-                col1.metric("溫度", f"{data['main']['temp']} °C")
-                col2.metric("體感", f"{data['main']['feels_like']} °C")
-                col3.metric("濕度", f"{data['main']['humidity']} %")
+                # 數據提取
+                desc = weather_data['weather'][0]['description']
+                temp = weather_data['main']['temp']
+                humid = weather_data['main']['humidity']
                 
-                weather_desc = data['weather'][0]['description']
-                st.info(f"📍 {city} 目前天氣：{weather_desc}")
+                st.metric("溫度", f"{temp} °C")
+                st.metric("濕度", f"{humid} %")
+                st.info(f"現況：{desc}")
                 
-                # 2. 地圖功能 
-                st.subheader("🗺️ 地理位置")
-                lat = data['coord']['lat']
-                lon = data['coord']['lon']
-                
-                # 建立 DataFrame 讓 st.map 使用
-                map_data = pd.DataFrame({'lat': [lat], 'lon': [lon]})
-                
-                # 顯示地圖 (zoom參數可調整縮放大小，預設自動)
-                st.map(map_data, zoom=10)
-                # ==========================================
+                # 地圖
+                lat = weather_data['coord']['lat']
+                lon = weather_data['coord']['lon']
+                st.map(pd.DataFrame({'lat': [lat], 'lon': [lon]}), zoom=10)
 
-                # 顯示 Raw Data
-                with st.expander("查看原始 JSON 資料"):
-                    st.json(data)
-
-            else:
-                st.error(f"找不到城市 '{city}'，請確認拼寫是否正確。")
+            with col2:
+                st.subheader("🤖 Gemini 旅遊顧問建議")
                 
-        except Exception as e:
-            st.error(f"連線發生錯誤: {e}")
+                # 2. 呼叫 AI
+                if gemini_api_key:
+                    advice = get_ai_travel_advice(gemini_api_key, city, desc, temp, humid)
+                    st.markdown(advice)
+                else:
+                    st.warning("⚠️ 未設定 Google API Key，僅顯示氣象資料。")
+                    st.markdown("""
+                    **想要 AI 幫你排行程嗎？**
+                    1. 去 Google AI Studio 申請 Key
+                    2. 填入側邊欄
+                    """)
+        else:
+            st.error("找不到城市或連線失敗")
+
+st.markdown("---")
+st.caption("Powered by Streamlit, OpenWeatherMap & Google Gemini")

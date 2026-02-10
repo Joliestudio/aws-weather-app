@@ -13,3 +13,8 @@ variable "weather_api_key" {
   type        = string
   sensitive   = true # 標記為敏感資料，避免直接顯示在 Log 中
 }
+variable "google_api_key" {
+  description = "Google Gemini API Key"
+  type        = string
+  sensitive   = true
+}

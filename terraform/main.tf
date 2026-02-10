@@ -72,6 +72,7 @@ resource "aws_instance" "app_server" {
               # 注意：這裡直接注入了你的 API Key 和 Image 名稱
               docker run -d -p 8501:8501 \
                 -e OPENWEATHER_API_KEY="${var.weather_api_key}" \
+                -e GOOGLE_API_KEY="${var.google_api_key}" \
                 --restart always \
                 ${var.docker_image}
               EOF
