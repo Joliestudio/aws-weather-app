@@ -37,7 +37,7 @@ def get_ai_travel_advice(api_key, city, weather_desc, temp, humidity):
         genai.configure(api_key=api_key)
         
         # 使用最新的 Flash 模型 (速度快且穩定)
-        model = genai.GenerativeModel('gemini-1.5-flash') 
+        model = genai.GenerativeModel('	gemini-2.5-flash-lite') 
         
         prompt = f"""
         你是一位專業的旅遊嚮導。請根據以下即時天氣資訊，為旅客規劃一個簡單的半日遊行程。
