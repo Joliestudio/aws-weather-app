@@ -61,18 +61,20 @@ resource "aws_instance" "app_server" {
   # User Data: 開機時自動執行的腳本
   user_data = <<-EOF
               #!/bin/bash
-              # 更新並安裝 Docker
               yum update -y
               yum install -y docker
               systemctl start docker
               systemctl enable docker
               usermod -a -G docker ec2-user
 
-              # 下載並執行你的 Docker Image
-              # 注意：這裡直接注入了你的 API Key 和 Image 名稱
+              # 這裡加入了 DB_HOST, DB_USER, DB_PASS
               docker run -d -p 8501:8501 \
                 -e OPENWEATHER_API_KEY="${var.weather_api_key}" \
                 -e GOOGLE_API_KEY="${var.google_api_key}" \
+                -e DB_HOST="${aws_db_instance.default.address}" \
+                -e DB_USER="${aws_db_instance.default.username}" \
+                -e DB_PASS="${var.db_password}" \
+                -e DB_NAME="${aws_db_instance.default.db_name}" \
                 --restart always \
                 ${var.docker_image}
               EOF
@@ -95,3 +97,42 @@ output "app_url" {
   description = "點擊此連結開啟氣象站"
   value       = "http://${aws_instance.app_server.public_ip}:8501"
 }
+
+# --- 1. 資料庫的 Security Group (只允許 EC2 連線) ---
+resource "aws_security_group" "rds_sg" {
+  name        = "weather_rds_sg"
+  description = "Allow traffic from EC2 only"
+
+  ingress {
+    from_port       = 5432 # Postgres 預設 Port
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.weather_sg.id] # 關鍵：只允許來自 Web Server SG 的連線
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# --- 2. RDS 實體 (PostgreSQL) ---
+resource "aws_db_instance" "default" {
+  allocated_storage    = 20
+  db_name              = "weatherdb"
+  engine               = "postgres"
+  engine_version       = "16.3" # 使用較新的穩定版
+  instance_class       = "db.t3.micro" # Free Tier 適用
+  username             = "dbadmin"
+  password             = var.db_password
+  parameter_group_name = "default.postgres16"
+  skip_final_snapshot  = true # 測試用，刪除時不備份 (省錢)
+  publicly_accessible  = false # 安全！不開放公網連線
+  vpc_security_group_ids = [aws_security_group.rds_sg.id]
+}
+
+# --- 3. 修正 EC2 User Data (注入 DB 連線資訊) ---
+# 請找到原本的 aws_instance 資源，修改 user_data 部分
+# 我們要把 DB 的網址 (Endpoint) 傳進 Docker

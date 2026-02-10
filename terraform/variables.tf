@@ -18,3 +18,8 @@ variable "google_api_key" {
   type        = string
   sensitive   = true
 }
+variable "db_password" {
+  description = "RDS root password"
+  type        = string
+  sensitive   = true
+}

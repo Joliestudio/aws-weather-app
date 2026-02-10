@@ -1,6 +1,6 @@
 # 🌤️ Cloud Weather Architecture
 
-[![CI/CD Build](https://github.com/你的帳號/weather-app-demo/actions/workflows/deploy.yml/badge.svg)](https://github.com/你的帳號/weather-app-demo/actions)
+[![CI/CD Build](https://github.com/joliestudio/weather-app-demo/actions/workflows/deploy.yml/badge.svg)](https://github.com/你的帳號/weather-app-demo/actions)
 [![Terraform](https://img.shields.io/badge/IaC-Terraform-purple)](https://www.terraform.io/)
 [![Docker](https://img.shields.io/badge/Container-Docker-blue)](https://www.docker.com/)
 [![AWS](https://img.shields.io/badge/Cloud-AWS%20EC2-orange)](https://aws.amazon.com/)
@@ -27,11 +27,12 @@
 3. **Push:** 將 Image 推送至 Docker Hub (Public Registry)。
 4. **Deploy:** 透過 Terraform Replace 或 EC2 User Data 拉取最新映像檔。
 
+
 *(請在此處插入你的 CI/CD 流程圖圖片)*
 
 ---
 
-## 🛠️ 技術棧 (Tech Stack)
+## 技術棧 
 
 | Category | Technology | Description |
 | :--- | :--- | :--- |
@@ -44,7 +45,7 @@
 
 ---
 
-## 🚀 快速開始 (Quick Start)
+## 快速開始 
 
 ### 1. 環境變數設定
 請複製範本檔案並設定您的 API Key：
