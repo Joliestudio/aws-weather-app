@@ -33,8 +33,11 @@ def get_ai_travel_advice(api_key, city, weather_desc, temp, humidity):
         return "⚠️ 請設定 Google Gemini API Key 以啟用 AI 功能"
     
     try:
+        # 設定 API Key
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-pro')
+        
+        # 使用最新的 Flash 模型 (速度快且穩定)
+        model = genai.GenerativeModel('gemini-1.5-flash') 
         
         prompt = f"""
         你是一位專業的旅遊嚮導。請根據以下即時天氣資訊，為旅客規劃一個簡單的半日遊行程。
@@ -51,11 +54,14 @@ def get_ai_travel_advice(api_key, city, weather_desc, temp, humidity):
         4. 當地特色美食推薦。
         """
         
-        with st.spinner('🤖 嚮導 正在絞盡腦汁為您規劃行程...'):
+        with st.spinner('🤖 AI 正在絞盡腦汁為您規劃行程...'):
             response = model.generate_content(prompt)
             return response.text
+            
     except Exception as e:
-        return f"嚮導 暫時無法連線: {str(e)}"
+        # 增加錯誤日誌以便除錯
+        logging.error(f"Gemini AI Error: {e}")
+        return f"AI 暫時無法連線: {str(e)}"
 
 # --- 3. UI 介面設計 ---
 st.title("🤖 AI 氣象旅遊嚮導")
