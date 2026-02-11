@@ -33,17 +33,17 @@
 
 ### 1. 雲端實體架構 (Cloud Architecture)
 包含 VPC 網路規劃、Public/Private Subnet 切分，以及 Security Group 的最小權限原則設定。
-![雲端架構圖](https://hackmd.io/_uploads/ByJ53vFvZl.png)
+![Cloud Architecture](./docs/cloud_architecture.png)
 *(Web Server 位於 Public Subnet，RDS 資料庫位於受保護的 Private Subnet，僅允許 Port 5432 內部連線)*
 
 ### 2. CI/CD 自動化部署流程 (CI/CD Pipeline)
 展示從本地開發、GitHub Actions 自動建置 Docker Image，到 Terraform 基礎設施部署的完整路徑。
-![CICD 架構流程圖](https://hackmd.io/_uploads/r1K1aPtw-l.png)
+![CICD Pipeline](./docs/cicd_pipeline.png)
 *(包含機密資訊 Secrets Management 的安全注入流程)*
 
 ### 3. 多人協作 Git 流程 (Git Workflow)
 採用 Gitflow 工作流，包含 Feature 分支開發、Hotfix 緊急修復與 Release 版本控制。
-![多人協作 Git 流程圖](https://hackmd.io/_uploads/Sy6nnDtDWx.png)
+![Git Flow](./docs/git_flow.png)
 
 ---
 
@@ -128,6 +128,7 @@ Plaintext
 .
 ├── .github/workflows/   # CI/CD GitHub Actions 設定檔
 ├── .venv/               # Python 虛擬環境 (包含所有安裝的依賴套件)
+├── docs/                # 架構圖與文件圖片
 ├── terraform/           # IaC 基礎設施代碼 (main.tf, terraform.tfvars.example, variables.tf)
 ├── app.py               # 主程式 (Streamlit Frontend & Backend Logic)
 ├── requirements.txt     # Python 依賴套件
