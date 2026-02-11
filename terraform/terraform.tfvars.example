@@ -1,4 +1,11 @@
-weather_api_key = "請填入您的Key"
+#  Docker Hub Image
+docker_image    = "dockerhub您的帳號/weather-app:latest"
+
+#  OpenWeatherMap API Key
+eather_api_key = "請填入您的Key"
+
+#  Google Gemini API Key
 google_api_key  = "請填入您的Key"
+
+#  DB password
 db_password = "請填入您的DB_Password"
-docker_image    = "joliej/weather-app:latest"

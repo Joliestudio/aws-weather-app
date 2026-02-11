@@ -299,14 +299,6 @@ elif page == "🔐 管理者後台":
                     "ai_response": "AI 回應摘要"
                 }
             )
-             # 顯示資料庫內容
-            df_logs = get_all_logs()
-      
-            # 簡單統計圖表
-            st.subheader("📈 熱門查詢城市")
-            if 'query_city' in df_logs.columns:
-                city_counts = df_logs['query_city'].value_counts()
-                st.bar_chart(city_counts)
-            st.download_button("📥 匯出 CSV", df.to_csv(index=False).encode('utf-8'), "logs.csv", "text/csv")
+               
         else:
             st.info("目前尚無查詢紀錄")

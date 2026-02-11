@@ -123,7 +123,7 @@ resource "aws_db_instance" "default" {
   allocated_storage    = 20
   db_name              = "weatherdb"
   engine               = "postgres"
-  engine_version       = "16.3" # 使用較新的穩定版
+  engine_version       = "16.11" # 使用較新的穩定版
   instance_class       = "db.t3.micro" # Free Tier 適用
   username             = "dbadmin"
   password             = var.db_password
